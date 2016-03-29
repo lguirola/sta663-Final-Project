@@ -15,6 +15,10 @@ Note: the potential to integrate to .ipynb may be considered, which is actually 
 ### First Rule: readable code with doctrings and detailed comments
 
 We both strongly agree that readablity is so important that it has everything to do with our developing efficiency. Thus,
+
+#### for file/library/package/module: lowercase name with maybe underscore
+''Modules should have short, all-lowercase names. Underscores can be used in the module name if it improves readability.''
+
 #### for scripts: sections
 We define sections in a script to demonstrate what to do, how to do and maybe why to do so.
 For example, if in Spyder, we can do 
@@ -71,5 +75,8 @@ def get_std(data);
     ...
     return std
 ```
+
+### Indent: only spaces and 4 spaces for a tab
+
 
 
