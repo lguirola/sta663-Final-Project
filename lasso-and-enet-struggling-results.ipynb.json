@@ -1,0 +1,342 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### import and data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 379,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "(100, 2) (100,) (50, 2) (50,) (50, 2) (50,)\n"
+     ]
+    }
+   ],
+   "source": [
+    "## packages\n",
+    "import numpy as np\n",
+    "import pandas as pd\n",
+    "import scipy as sp\n",
+    "import scipy.linalg as la\n",
+    "import matplotlib.pyplot as plt\n",
+    "import statsmodels as sm\n",
+    "%matplotlib inline\n",
+    "\n",
+    "from sklearn.metrics import r2_score\n",
+    "from sklearn.preprocessing import normalize, scale\n",
+    "\n",
+    "## generate data\n",
+    "np.random.seed(42)\n",
+    "\n",
+    "pp = 2\n",
+    "\n",
+    "n_samples, n_features = 100, pp\n",
+    "X = np.random.randn(n_samples, n_features)\n",
+    "coef = 3 * np.random.randn(n_features)\n",
+    "inds = np.arange(n_features)\n",
+    "np.random.shuffle(inds)\n",
+    "#coef[inds[10:]] = 0  # sparsify coef\n",
+    "y = np.dot(X, coef)\n",
+    "\n",
+    "# add noise\n",
+    "y += 0.01 * np.random.normal((n_samples,))\n",
+    "\n",
+    "# Split data in train set and test set\n",
+    "n_samples = X.shape[0]\n",
+    "X_train, y_train = X[:n_samples // 2], y[:n_samples // 2]\n",
+    "X_test, y_test = X[n_samples // 2:], y[n_samples // 2:]\n",
+    "\n",
+    "print(X.shape, y.shape, X_train.shape, y_train.shape, X_test.shape, y_test.shape)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 397,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "r^2 on test data : 0.992934\n",
+      "r^2 on test data : 0.991355\n",
+      "STD sol: \n",
+      " coef -1.00418639469 [ 1.07336208  1.68235358] \n",
+      " lasso 0.977730293164 [ 0.93169582  1.58188561] \n",
+      " enet 0.976430492791 [ 0.9376857   1.55255268]\n"
+     ]
+    }
+   ],
+   "source": [
+    "###############################################################################\n",
+    "# Lasso\n",
+    "from sklearn.linear_model import Lasso\n",
+    "\n",
+    "alpha, l1_ratio = 0.1, 0.5\n",
+    "lasso = Lasso(alpha=alpha, max_iter=1000)\n",
+    "\n",
+    "y_pred_lasso = lasso.fit(X_train, y_train).predict(X_test)\n",
+    "r2_score_lasso = r2_score(y_test, y_pred_lasso)\n",
+    "#print(lasso)\n",
+    "print(\"r^2 on test data : %f\" % r2_score_lasso)\n",
+    "\n",
+    "###############################################################################\n",
+    "# ElasticNet\n",
+    "from sklearn.linear_model import ElasticNet\n",
+    "\n",
+    "enet = ElasticNet(alpha=alpha, l1_ratio=0.5)\n",
+    "\n",
+    "y_pred_enet = enet.fit(X_train, y_train).predict(X_test)\n",
+    "r2_score_enet = r2_score(y_test, y_pred_enet)\n",
+    "#print(enet)\n",
+    "print(\"r^2 on test data : %f\" % r2_score_enet)\n",
+    "\n",
+    "#plt.plot(enet.coef_, label='Elastic net coefficients')\n",
+    "#plt.plot(lasso.coef_, label='Lasso coefficients')\n",
+    "#plt.plot(coef, '--', label='original coefficients')\n",
+    "#plt.legend(loc='best')\n",
+    "#plt.title(\"Lasso R^2: %f, Elastic Net R^2: %f\"\n",
+    "#          % (r2_score_lasso, r2_score_enet))\n",
+    "#plt.show()\n",
+    "print('STD sol:', '\\n', 'coef', np.dot(X_train, coef).mean()-y_train.mean(),coef, \n",
+    "      '\\n','lasso', lasso.intercept_, lasso.coef_, \n",
+    "      '\\n','enet', enet.intercept_, enet.coef_)\n",
+    "\n",
+    "#for i in range(p):\n",
+    "#    plt.plot(lasso.path(X_train, y_train)[1][i])\n",
+    "#plt.scatter(X_train, y_train)\n",
+    "#plt.plot(X_train, lasso.intercept_ + X_train*lasso.coef_)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 398,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "STD sol: \n",
+      " coef [ 1.07336208  1.68235358] \n",
+      " lasso 0.977730293164 [ 0.93169582  1.58188561] \n",
+      " enet 0.976430492791 [ 0.9376857   1.55255268]\n",
+      "\n",
+      "Mine:\n",
+      "OLS [ 1.00418639  1.07336208  1.68235358]\n",
+      "OLS with CD [ 1.00418639  1.07336208  1.68235358]\n",
+      "OLS with ACD [ 1.00418639  1.07336208  1.68235358]\n",
+      "Lasso [ 0.88074825  0.95583267  1.5783195 ]\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table class=\"simpletable\">\n",
+       "<caption>OLS Regression Results</caption>\n",
+       "<tr>\n",
+       "  <th>Dep. Variable:</th>            <td>y</td>        <th>  R-squared:         </th> <td>   0.988</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th> <td>   0.987</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   1908.</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Date:</th>             <td>Wed, 13 Apr 2016</td> <th>  Prob (F-statistic):</th> <td>1.01e-45</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Time:</th>                 <td>04:29:51</td>     <th>  Log-Likelihood:    </th> <td>  7.3178</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>No. Observations:</th>      <td>    50</td>      <th>  AIC:               </th> <td>  -8.636</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Df Residuals:</th>          <td>    47</td>      <th>  BIC:               </th> <td>  -2.899</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Df Model:</th>              <td>     2</td>      <th>                     </th>     <td> </td>   \n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>     <td> </td>   \n",
+       "</tr>\n",
+       "</table>\n",
+       "<table class=\"simpletable\">\n",
+       "<tr>\n",
+       "    <td></td>       <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th> <th>[95.0% Conf. Int.]</th> \n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>const</th> <td>    0.8797</td> <td>    0.031</td> <td>   28.408</td> <td> 0.000</td> <td>    0.817     0.942</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>x1</th>    <td>    0.9206</td> <td>    0.037</td> <td>   24.920</td> <td> 0.000</td> <td>    0.846     0.995</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>x2</th>    <td>    1.5463</td> <td>    0.031</td> <td>   49.355</td> <td> 0.000</td> <td>    1.483     1.609</td>\n",
+       "</tr>\n",
+       "</table>\n",
+       "<table class=\"simpletable\">\n",
+       "<tr>\n",
+       "  <th>Omnibus:</th>       <td> 3.918</td> <th>  Durbin-Watson:     </th> <td>   1.782</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Prob(Omnibus):</th> <td> 0.141</td> <th>  Jarque-Bera (JB):  </th> <td>   2.079</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Skew:</th>          <td> 0.221</td> <th>  Prob(JB):          </th> <td>   0.354</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Kurtosis:</th>      <td> 2.104</td> <th>  Cond. No.          </th> <td>    1.30</td>\n",
+       "</tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "<class 'statsmodels.iolib.summary.Summary'>\n",
+       "\"\"\"\n",
+       "                            OLS Regression Results                            \n",
+       "==============================================================================\n",
+       "Dep. Variable:                      y   R-squared:                       0.988\n",
+       "Model:                            OLS   Adj. R-squared:                  0.987\n",
+       "Method:                 Least Squares   F-statistic:                     1908.\n",
+       "Date:                Wed, 13 Apr 2016   Prob (F-statistic):           1.01e-45\n",
+       "Time:                        04:29:51   Log-Likelihood:                 7.3178\n",
+       "No. Observations:                  50   AIC:                            -8.636\n",
+       "Df Residuals:                      47   BIC:                            -2.899\n",
+       "Df Model:                           2                                         \n",
+       "Covariance Type:            nonrobust                                         \n",
+       "==============================================================================\n",
+       "                 coef    std err          t      P>|t|      [95.0% Conf. Int.]\n",
+       "------------------------------------------------------------------------------\n",
+       "const          0.8797      0.031     28.408      0.000         0.817     0.942\n",
+       "x1             0.9206      0.037     24.920      0.000         0.846     0.995\n",
+       "x2             1.5463      0.031     49.355      0.000         1.483     1.609\n",
+       "==============================================================================\n",
+       "Omnibus:                        3.918   Durbin-Watson:                   1.782\n",
+       "Prob(Omnibus):                  0.141   Jarque-Bera (JB):                2.079\n",
+       "Skew:                           0.221   Prob(JB):                        0.354\n",
+       "Kurtosis:                       2.104   Cond. No.                         1.30\n",
+       "==============================================================================\n",
+       "\n",
+       "Warnings:\n",
+       "[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.\n",
+       "\"\"\""
+      ]
+     },
+     "execution_count": 398,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "print('STD sol:', '\\n', 'coef', coef, \n",
+    "      '\\n','lasso', lasso.intercept_, lasso.coef_, \n",
+    "      '\\n','enet', enet.intercept_, enet.coef_)\n",
+    "print('\\nMine:')\n",
+    "\n",
+    "########### OLS ##############\n",
+    "N, p = X_train.shape\n",
+    "X = np.hstack([np.ones((N,1)), X_train])\n",
+    "y = y_train\n",
+    "print('OLS', la.solve(X.T.dot(X), X.T.dot(y)))\n",
+    "\n",
+    "# OLS with CD\n",
+    "b = np.zeros(p+1)\n",
+    "for itr in range(100):\n",
+    "    for j in range(p+1):\n",
+    "        b[j] = np.dot(X[:,j].T,(y - (np.dot(X, b) - np.dot(X[:, j], b[j]))))/(np.dot(X[:,j].T, X[:,j]))\n",
+    "print('OLS with CD', b)\n",
+    "\n",
+    "# OLS with ACD\n",
+    "b = np.zeros(p+1)\n",
+    "for itr in range(100):\n",
+    "    for j in range(p+1):\n",
+    "        b[j] = np.dot(X[:,j], y-np.dot(X, b))/la.norm(X[:,j],2)**2+ b[j]\n",
+    "print('OLS with ACD', b)\n",
+    "\n",
+    "######## Lasso ###############\n",
+    "def S(z, gamma):\n",
+    "    if np.abs(z) - gamma > 0:\n",
+    "        return np.sign(z)*(np.abs(z) - gamma)\n",
+    "    else:\n",
+    "        return 0\n",
+    "\n",
+    "#Xn, yn = scale(X_train, axis=0), scale(y_train)\n",
+    "Xn, yn = np.hstack([np.ones((N,1)), X_train]), y_train\n",
+    "b = np.zeros(p+1)\n",
+    "path = []; path.append(b.copy())\n",
+    "for itr in range(100):\n",
+    "    for j in range(p+1):\n",
+    "        bb = np.dot(Xn[:,j].T,(yn - (np.dot(Xn, b) - np.dot(Xn[:, j], b[j]))))/np.dot(X[:,j].T, X[:,j])\n",
+    "        b[j] = S(bb, 0.1)\n",
+    "        #b[j] = bb\n",
+    "    path.append(b.copy())\n",
+    "print('Lasso',  b)\n",
+    "#plt.plot(path[:10])\n",
+    "\n",
+    "\n",
+    "###############################################################################\n",
+    "# enet\n",
+    "    \n",
+    "pass\n",
+    "smX = sm.api.add_constant(X_train)\n",
+    "smModel = sm.regression.linear_model.OLS(y_train, smX)\n",
+    "smResults = smModel.fit_regularized(alpha=0.1, L1_wt=0.5)\n",
+    "smResults.summary()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.4.4"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 0
+}
