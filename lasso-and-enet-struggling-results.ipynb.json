@@ -1,0 +1,281 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### import and data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 61,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "(442, 10) (442,)\n"
+     ]
+    }
+   ],
+   "source": [
+    "## packages\n",
+    "import numpy as np\n",
+    "import pandas as pd\n",
+    "import scipy as sp\n",
+    "import scipy.linalg as la\n",
+    "import matplotlib.pyplot as plt\n",
+    "import statsmodels as sm\n",
+    "%matplotlib inline\n",
+    "\n",
+    "from sklearn.metrics import r2_score\n",
+    "from sklearn.preprocessing import normalize, scale\n",
+    "\n",
+    "## generate data\n",
+    "np.random.seed(42)\n",
+    "\n",
+    "pp = 10\n",
+    "\n",
+    "n_samples, n_features = 1000, pp\n",
+    "data_X = np.random.randn(n_samples, n_features)\n",
+    "coef = 3 * np.random.randn(n_features)\n",
+    "inds = np.arange(n_features)\n",
+    "np.random.shuffle(inds)\n",
+    "coef[inds[10:]] = 0  # sparsify coef\n",
+    "data_y = np.dot(data_X, coef)\n",
+    "# add noise\n",
+    "data_y += 0.02 * np.random.normal((n_samples,))\n",
+    "\n",
+    "##########\n",
+    "from sklearn import datasets\n",
+    "diabetes = datasets.load_diabetes()\n",
+    "data_X = diabetes.data\n",
+    "data_y = diabetes.target\n",
+    "n_samples, n_features = data_x.shape\n",
+    "\n",
+    "# Split data in train set and test set\n",
+    "#n_samples = data_X.shape[0]\n",
+    "#X_train, y_train = data_X[:n_samples // 2], data_y[:n_samples // 2]\n",
+    "#X_test, y_test = data_X[n_samples // 2:], data_y[n_samples // 2:]\n",
+    "\n",
+    "#print(data_X.shape, data_y.shape, X_train.shape, y_train.shape, X_test.shape, y_test.shape)\n",
+    "#XX = np.hstack([np.ones((len(X_train),1)), X_train])\n",
+    "#print(la.solve(XX.T.dot(XX), XX.T.dot(y_train))) \n",
+    "#print(coef)\n",
+    "\n",
+    "X, y = scale(data_X, axis=0), scale(data_y)\n",
+    "print(X.shape, y.shape)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 76,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "STD sol: \n",
+      " coef 148.084528619 [-2.03548419 -0.91649839 -1.79214318  0.33125414  3.59153559 -2.31312647\n",
+      "  3.00246149 -2.34501622 -2.54288164  2.45578386] \n",
+      " lasso -1.70722090721e-16 [ 0.          0.          0.07123662  0.          0.          0.         -0.\n",
+      "  0.          0.03410059  0.        ] \n",
+      " enet -1.69853356389e-16 [ 0.        0.        0.048895  0.        0.        0.       -0.        0.\n",
+      "  0.029379  0.      ]\n"
+     ]
+    }
+   ],
+   "source": [
+    "###############################################################################\n",
+    "# Lasso\n",
+    "from sklearn.linear_model import Lasso\n",
+    "\n",
+    "lasso = Lasso(alpha=0.5)\n",
+    "\n",
+    "lasso.fit(X, y)\n",
+    "#print(lasso)\n",
+    "#print(\"r^2 on test data : %f\" % r2_score_lasso)\n",
+    "\n",
+    "###############################################################################\n",
+    "# ElasticNet\n",
+    "from sklearn.linear_model import ElasticNet\n",
+    "\n",
+    "enet = ElasticNet(alpha=1, l1_ratio=0.5)\n",
+    "\n",
+    "enet.fit(X, y)\n",
+    "#r2_score_enet = r2_score(y_test, y_pred_enet)\n",
+    "#print(enet)\n",
+    "#print(\"r^2 on test data : %f\" % r2_score_enet)\n",
+    "\n",
+    "#plt.plot(enet.coef_, label='Elastic net coefficients')\n",
+    "#plt.plot(lasso.coef_, label='Lasso coefficients')\n",
+    "#plt.plot(coef, '--', label='original coefficients')\n",
+    "#plt.legend(loc='best')\n",
+    "#plt.title(\"Lasso R^2: %f, Elastic Net R^2: %f\"\n",
+    "#          % (r2_score_lasso, r2_score_enet))\n",
+    "#plt.show()\n",
+    "print('STD sol:', '\\n', 'coef', y_train.mean() - np.dot(X_train, coef).mean(), coef, \n",
+    "      '\\n','lasso', lasso.intercept_, lasso.coef_, \n",
+    "      '\\n','enet', enet.intercept_, enet.coef_)\n",
+    "\n",
+    "#for i in range(p):\n",
+    "#    plt.plot(lasso.path(X_train, y_train)[1][i])\n",
+    "#plt.scatter(X_train, y_train)\n",
+    "#plt.plot(X_train, lasso.intercept_ + X_train*lasso.coef_)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 78,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "standardized sol [ 0.          0.          0.07123567  0.          0.          0.          0.\n",
+      "  0.          0.03410101  0.        ]\n",
+      "sol [   0.            0.          118.07113424    0.            0.            0.\n",
+      "    0.            0.           56.25741372    0.        ]\n"
+     ]
+    }
+   ],
+   "source": [
+    "#print('STD sol:', '\\n', 'coef', y_train.mean() - np.dot(X_train, coef).mean(), coef, \n",
+    "##      '\\n','lasso', lasso.intercept_, lasso.coef_, \n",
+    " #     '\\n','enet', enet.intercept_, enet.coef_)\n",
+    "#print('\\nMine:')\n",
+    "\n",
+    "########### OLS ##############\n",
+    "N, p = X.shape\n",
+    "#X = np.hstack([np.ones((N,1)), X_train])\n",
+    "#y = y_train\n",
+    "#print('OLS', la.solve(X.T.dot(X), X.T.dot(y)))\n",
+    "\n",
+    "# OLS with CD\n",
+    "#b = np.zeros(p+1)\n",
+    "#for itr in range(100):\n",
+    "#    for j in range(p+1):\n",
+    "#        b[j] = np.dot(X[:,j].T,(y - (np.dot(X, b) - np.dot(X[:, j], b[j]))))/(np.dot(X[:,j].T, X[:,j]))\n",
+    "#print('OLS with CD', b)\n",
+    "\n",
+    "# OLS with ACD\n",
+    "#b = np.zeros(p+1)\n",
+    "#for itr in range(100):\n",
+    "#    for j in range(p+1):\n",
+    "#        b[j] = np.dot(X[:,j], y-np.dot(X, b))/la.norm(X[:,j],2)**2+ b[j]\n",
+    "#print('OLS with ACD', b)\n",
+    "\n",
+    "######## Lasso ###############\n",
+    "def S(z, gamma):\n",
+    "    if np.abs(z) - gamma > 0:\n",
+    "        return np.sign(z)*(np.abs(z) - gamma)\n",
+    "    else:\n",
+    "        return 0\n",
+    "\n",
+    "alpha = 0.5\n",
+    "l1_ratio = 1\n",
+    "\n",
+    "b = np.zeros(p)\n",
+    "b_new = np.zeros(p)\n",
+    "path = []; path.append(b.copy())\n",
+    "\n",
+    "for itr in range(2000):\n",
+    "    \n",
+    "\n",
+    "    for j in range(p):\n",
+    "        \n",
+    "        b_new[j] = S(1/N * np.dot(X[:,j], (y - (np.dot(X,b) - np.dot(X[:,j], b_new[j]))))\n",
+    "                     , alpha*l1_ratio)/(1+alpha*(1-l1_ratio))\n",
+    "        \n",
+    "        #bb = 1/N * np.dot(Xn[:,j].T, (\n",
+    "        #        yn - (np.dot(Xn,b)))\n",
+    "        #                 )\n",
+    "        #b[j] += bb\n",
+    "        #bb = np.dot(Xn[:,j].T, (yn - (np.dot(Xn,b) - np.dot(Xn[:,j], b[j]))))/la.norm(Xn[:,j])**2\n",
+    "        #b[j] = S(bb, 0.1)\n",
+    "   \n",
+    "    b = b_new.copy()\n",
+    "\n",
+    "\n",
+    "    path.append(b.copy())\n",
+    "    \n",
+    "bc = y_train.std()/X_train.std(axis=0) * b\n",
+    "print('standardized sol', b)\n",
+    "print('sol', bc)\n",
+    "#plt.plot(path[:10])\n",
+    "#for i in range(20):\n",
+    "#    print(path[i])\n",
+    "###############################################################################\n",
+    "# enet\n",
+    "\n",
+    "\n",
+    "\n",
+    "    \n",
+    "pass\n",
+    "#import statsmodels as sm\n",
+    "#smX = sm.api.add_constant(X_train)\n",
+    "#smModel = sm.regression.linear_model.OLS(y_train, smX)\n",
+    "#smResults = smModel.fit_regularized(alpha=0.1, L1_wt=0.5)\n",
+    "#smResults.summary()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.4.4"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 0
+}
