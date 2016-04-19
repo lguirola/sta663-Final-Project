@@ -1,4 +1,5 @@
 ## Abstract
+#### Authors: Zhai, Xiaodong; Guirola, Luis
 
 In this project, we implement the elastic net (Zou Hastie 2005) technique for regularized regression. As described in the original contribution, Elastic Net is a generalized regularization method tha encompasses LASSO and Ridge regression as special cases. While, unlike Ridge regression, it performs variable selection (and is thus suitable for sparse data), it attenuates the problem of LASSO to overshrink coefficients of variables that are likely to be grouped. To compute it, we intend to choose among the several techniques proposed for it, including, but not exclusively, the LARS-EN suggested in the [original paper](http://stanford.io/1OWWTyZ), as well as algorithms such as coordinate gradient descent [Friedman,Hastie, Tibshirani (2010)](https://www.jstatsoft.org/article/view/v033i01), and others described in [Hastie, Tibshirani, Wainwright, chapter 5](https://www.crcpress.com/Statistical-Learning-with-Sparsity-The-Lasso-and-Generalizations/Hastie-Tibshirani-Wainwright/9781498712163). 
 
