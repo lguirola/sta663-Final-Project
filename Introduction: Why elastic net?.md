@@ -8,7 +8,7 @@ A particular advantage of LASSO and its successors (of which elastic net is a pr
 
 In this project we approach the implementation of Elastic net using a coordinate descent algorithm. Elastic net is a technique originally proposed in by Zou Hastie (2005) which combines the penalty of the LASSO (absolute value) with that of ridge regression (quadratic). Following [[Friedman et al 2007 , pg 6]](http://arxiv.org/pdf/0708.1485.pdf), it the solution solves the following problem:
 
-$$min_{\beta} \frac{1}{2} \sum (y_i -\sum x_{ij} \beta_j)^2 + \lambda \sum_{j} (\alpha |\beta_j| + (1-\alpha) \frac{\beta_{j}^2}{2} )$$
+$$min_{\beta} \frac{1}{2} \sum (y_i -\sum x_{ij} \beta_j)^2 + \lambda \sum_{j} (\alpha |\beta_j| + (1-\alpha) \frac{\beta_{j}^2}{2})$$
 
 As it can be seen, the system is a modified OLS, in which a conver combination of a quadratic and an absolute value penalty is imposed on the coefficients. 
 
