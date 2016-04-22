@@ -22,3 +22,5 @@ Thus, the C++ accelerating path is:
 4) getting the (un)converged betas
 
 And it works. Basically with C++ the algorithm imporves roughly more than 50%. Of course, it is slower than sklearn package. Especially with high-dimensional sparse matrix, it is even slower - but still much faster than naive code.
+
+This can be found [here](https://github.com/shldngzh/project-sta-663-final/blob/master/wrapping_cpp_final_with_profiling.ipynb)
