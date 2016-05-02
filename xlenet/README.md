@@ -3,7 +3,7 @@ A Python package to conduct regularized linear regression via Lasso, Ridge Regre
 
 This is a final project product from the course STA-663-2016 by Cliburn Chan [https://github.com/cliburn] and Janice McCarthy at Duke University.
 
-The final project: https://github.com/lguirola/sta663-Final-Project
+__The final project: https://github.com/lguirola/sta663-Final-Project__
 
 We survived the course and learnt a lot!
 
