@@ -1,9 +1,8 @@
 # sta663-final-project
 
-* final project report:
+- Folder **XiaodongZhai_LuisGuirola_Zhou_FinalProject** contains:
 
-final-report.ipynb
+   * final project report: final-report.ipynb
+   * downloadable package: xlenet
 
-* downloadable package:
-
-xlenet
+- Folder dev-hist contains historic files. 
